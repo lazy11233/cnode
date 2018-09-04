@@ -26,36 +26,51 @@
                     </span>
                     <!-- 帖子的分类 -->
                     <span :class="[{put_good:(post.good === true)},{put_top:(post.top === true)},
-                    {topiclist:(post.good != true && post.top != true)}]">
+                    {topiclist_tab:(post.good != true && post.top != true)}]">
                         <span>
                             {{post | tabFormatter}}
                         </span>
                     </span>
                     <!-- 标题 -->
-                    <span>{{post.title}}</span>
+                    <router-link :to="{
+                        name: 'post_content',
+                        params: {
+                            id: post.id,
+                            name: post.author.loginname
+                        }
+                    }">
+                        <span>{{post.title}}</span>
+                    </router-link>
                     <!-- 最终回复时间 -->
                     <span class="last_reply">{{post.last_reply_at | formatterDate}}</span>
+                </li>
+                <li>
+                    <Pagination @handleList="renderList"></Pagination>
                 </li>
             </ul>
         </div>
     </div>    
 </template>
 <script>
-// 获取数据的地址：https://cnodejs.org.api/v1/topics,参数列表：{}
+import Pagination from './Pagination.vue';
     export default {
         name: 'PostList',
         data() {
             return {
                 isLoading: false,   //当前的帖子状态。
                 currentPage: 1,     //当前请求的页数，默认为1.
-                posts: []           //代表页面的帖子。
+                posts: [],           //代表页面的帖子。
+                postpage: 1
             }
+        },
+        components: {
+            Pagination,
         },
         methods: {
             getData() {
                 this.$http.get(`https://cnodejs.org/api/v1/topics`,{
                     params: {
-                        page:1,
+                        page:this.postpage,
                         limit: 20
                     }
                 }).then(res => {
@@ -65,6 +80,10 @@
                 }).catch(err => {
                     console.log(err);
                 })
+            },
+            renderList(value) {
+                this.postpage = value;
+                this.getData();
             }
         },
         beforeMount() {
@@ -74,6 +93,7 @@
     }
 </script>
 <style scoped>
+
 .PostList{
     background-color: #e1e1e1;
   }
@@ -140,7 +160,7 @@
     margin-right: 10px;
   }
 
-  .topiclist-tab {
+  .topiclist_tab {
     background-color: #e5e5e5;
     color: #999;
     padding: 2px 4px;
